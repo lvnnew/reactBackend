@@ -177,6 +177,7 @@ const server = new ApolloServer({
   resolvers,
   csrfPrevention: true,
   cache: 'bounded',
+  introspection: true,
   context: ({req}) => ({
     user: req.headers.user,
   }),
