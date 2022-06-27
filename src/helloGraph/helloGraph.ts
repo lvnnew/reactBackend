@@ -1,72 +1,11 @@
 /* eslint-disable no-console */
-import express from 'express';
-import {log} from './log';
-import {json} from 'body-parser';
-import {ApolloServer, gql} from 'apollo-server-express';
+import {ApolloServer, gql} from 'apollo-server';
 
-// yarn ts-node-dev src/index.ts
+// yarn ts-node-dev src/helloGraph/helloGraph.ts
 
-const app = express();
-app.use(json());
-const port = process.env.PORT || 3000;
-let films = [
-  {
-    id: 1,
-    title: 'Аватар',
-    raiting: 9,
-  },
-  {
-    id: 2,
-    title: 'Форсаж',
-    raiting: 7,
-  },
-  {
-    id: 3,
-    title: 'Книга Иллая',
-    raiting: 10,
-  },
-];
-
-app.get('/', (_req, res) => {
-  res.send({message: 'Hello Vladimir!'});
-});
-
-app.get('/films', (_req, res) => {
-  res.send(films);
-});
-
-app.get('/films/:filmId', (req, res) => {
-  log.info(req.params);
-  res.send(films.find(film => film.id === Number.parseInt(req.params.filmId, 10)));
-});
-
-app.post('/films', (req, res) => {
-  log.info(req.body);
-  const maxId = Math.max(...films.map(film => film.id));
-  films.push({
-    ...req.body,
-    id: maxId + 1,
-  });
-  res.send(films);
-});
-
-app.delete('/films/:filmId', (req, res) => {
-  log.info(req.params);
-  films = films.filter(film => film.id !== Number.parseInt(req.params.filmId, 10));
-  res.send(films);
-});
-
-app.put('/films/:filmId', (req, res) => {
-  log.info(req.params);
-  films = films.map(
-    film => (film.id === Number.parseInt(req.params.filmId, 10) ? {
-      ...req.body,
-      id: film.id,
-    } : film),
-  );
-  res.send(films);
-});
-
+// A schema is a collection of type definitions (hence "typeDefs")
+// that together define the "shape" of queries that are executed against
+// your data.
 const typeDefs = gql`
   # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
 
@@ -182,11 +121,7 @@ const server = new ApolloServer({
   }),
 });
 
-server
-  .start()
-  .then(() => server.applyMiddleware({app, path: '/graph'}));
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+// The `listen` method launches a web server.
+server.listen().then(({url}) => {
+  console.log(`🚀  Server ready at ${url}`);
 });
-
