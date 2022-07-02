@@ -7,11 +7,13 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint ./src/**.ts",
-    "build": "(rm -rf dist || true) && tsc",
+    "build": "npx prisma generate && (rm -rf dist || true) && tsc",
     "start": "node ./dist/index.js",
-    "ts-node": "ts-node --files"
+    "ts-node": "ts-node --files",
+    "deploy": "git push heroku main"
   },
   "dependencies": {
+    "@prisma/client": "^4.0.0",
     "apollo-server": "^3.9.0",
     "apollo-server-express": "^3.9.0",
     "body-parser": "^1.20.0",

@@ -3,6 +3,7 @@ import express from 'express';
 import {log} from './log';
 import {json} from 'body-parser';
 import {ApolloServer, gql} from 'apollo-server-express';
+import {PrismaClient} from '@prisma/client';
 
 // yarn ts-node-dev src/index.ts
 
@@ -72,9 +73,12 @@ const typeDefs = gql`
 
   # This "Book" type defines the queryable fields for every book in our data source.
  
+  scalar Void 
+
   type User {
-    id: ID!
+    id: Int!
     name: String
+    email: String!
   }
 
   type Library {
@@ -93,25 +97,22 @@ const typeDefs = gql`
     name: String!
   }
 
-  # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "books" query returns an array of zero or more Books (defined above).
   type Query {
-    user(id: ID!): User
+    user(id: Int!): User
+    users: [User!]!
     libraries: [Library]
+  }
+  type Mutation {
+    addUser(name: String, email: String!): User
+    deleteUser(id: Int!): Void
+    updateUser(id: Int!, name: String, email: String!): User
   }
 `;
 
-const users = [
-  {
-    id: '1',
-    name: 'Elizabeth Bennet',
-  },
-  {
-    id: '2',
-    name: 'Fitzwilliam Darcy',
-  },
-];
+interface Context {
+  user: string,
+  prisma: PrismaClient
+}
 
 const libraries = [
   {
@@ -139,14 +140,42 @@ const books = [
 // Resolvers define the technique for fetching the types defined in the
 // schema. This resolver retrieves books from the "books" array above.
 const resolvers = {
+
   Query: {
-    user(_parent: any, args: any, context: any, _info: any) {
-      console.log(context);
-      return users.find(user => user.id === args.id);
+    user(_parent: any, args: any, context: Context, _info: any) {
+      return context.prisma.user.findUnique({where: {id: args.id}});
+    },
+    users(_parent: any, _args: any, context: Context, _info: any) {
+      return context.prisma.user.findMany();
     },
     libraries() {
       // Return our hardcoded array of libraries
       return libraries;
+    },
+  },
+
+  Mutation: {
+    addUser(_parent: any, args: any, context: Context, _info: any) {
+      return context.prisma.user.create({data: {
+        name: args.name,
+        email: args.email,
+      }});
+    },
+    async deleteUser(_parent: any, args: any, context: Context, _info: any) {
+      await context.prisma.user.delete({where: {
+        id: args.id,
+      }});
+    },
+    updateUser(_parent: any, args: any, context: Context, _info: any) {
+      return context.prisma.user.update({
+        where: {
+          id: args.id,
+        },
+        data: {
+          name: args.name,
+          email: args.email,
+        },
+      });
     },
   },
 
@@ -157,6 +186,7 @@ const resolvers = {
       return books.filter(book => book.branch === parent.branch);
     },
   },
+
   Book: {
 
     // The parent resolver (Library.books) returns an object with the
@@ -172,22 +202,34 @@ const resolvers = {
 
 // The ApolloServer constructor requires two parameters: your schema
 // definition and your set of resolvers.
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  csrfPrevention: true,
-  cache: 'bounded',
-  introspection: true,
-  context: ({req}) => ({
-    user: req.headers.user,
-  }),
-});
+const prisma = new PrismaClient();
 
-server
-  .start()
-  .then(() => server.applyMiddleware({app, path: '/graph'}));
+async function start() {
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    csrfPrevention: true,
+    cache: 'bounded',
+    introspection: true,
+    context: ({req}) => ({
+      user: req.headers.user,
+      prisma,
+    }),
+  });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+  server
+    .start()
+    .then(() => server.applyMiddleware({app, path: '/graph'}));
 
+  app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`);
+  });
+}
+
+start()
+  .catch((error) => {
+    throw error;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
