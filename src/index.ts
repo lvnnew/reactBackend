@@ -5,7 +5,7 @@ import createApolloServer from './graph/createApolloServer';
 import {filmsRouter} from './rest/films';
 import express from 'express';
 
-// yarn ts-node-dev src/index.ts
+// cross-env TOKEN=777 yarn ts-node-dev src/index.ts
 
 const app = express();
 app.use(json());
