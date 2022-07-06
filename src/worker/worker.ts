@@ -3,7 +3,7 @@ import {config} from 'dotenv';
 import {run} from 'graphile-worker';
 import exitHook from 'exit-hook';
 
-// yarn+++ ts-node-dev src/helloQueue/worker.ts
+// yarn ts-node-dev src/worker/worker.ts
 
 config();
 
