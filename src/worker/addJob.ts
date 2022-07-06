@@ -1,7 +1,7 @@
 import {config} from 'dotenv';
 import {quickAddJob} from 'graphile-worker';
 
-// yarn ts-node-dev src/helloQueue/addJob.ts
+// yarn ts-node-dev src/worker/addJob.ts
 
 config();
 
