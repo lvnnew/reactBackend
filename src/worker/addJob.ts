@@ -16,7 +16,17 @@ const app = async () => {
       'hello',
 
       // Payload
-      {name: 'Bobby Tables'},
+      {name: 'Bobby Tables', age: 18},
+    );
+    await quickAddJob(
+      // makeWorkerUtils options
+      {connectionString: process.env.DATABASE_URL},
+
+      // Task identifier
+      'sum',
+
+      // Payload
+      {firstNum: 5, secondNum: 18},
     );
   }
 };

@@ -21,10 +21,15 @@ const runnerPromise = run({
   pollInterval: 1000,
   // you can set the taskList or taskDirectory but not both
   taskList: {
-    hello: async (payload, helpers) => {
-      const {name} = payload as any;
+    hello: async (payload: any, helpers) => {
+      const {name} = payload;
       await delayMs(2000);
       helpers.logger.info(`Hello, ${name}`);
+      helpers.logger.info(payload);
+    },
+    sum: async (payload: any, helpers) => {
+      const {firstNum, secondNum} = payload;
+      helpers.logger.info(firstNum + secondNum);
     },
   },
   // or:
