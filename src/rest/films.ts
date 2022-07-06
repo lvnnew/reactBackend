@@ -25,6 +25,16 @@ filmsRouter.get('/', (_req, res) => {
   res.send(films);
 });
 
+filmsRouter.use('/:filmId', (req, res, next) => {
+  log.info(req.headers);
+  log.info(`TOKEN: ${process.env.TOKEN}`);
+  if (req.headers.auth === process.env.TOKEN) {
+    next();
+  } else {
+    res.status(401).send();
+  }
+});
+
 filmsRouter.get('/:filmId', (req, res) => {
   log.info(req.params);
   res.send(films.find(film => film.id === Number.parseInt(req.params.filmId, 10)));
