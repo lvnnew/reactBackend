@@ -3,7 +3,7 @@ import {config} from 'dotenv';
 import {parseCronItems, run} from 'graphile-worker';
 import exitHook from 'exit-hook';
 
-// yarn ts-node-dev src/worker/worker.ts
+// yarn ts-node-dev src/helloCron/worker.ts
 
 config();
 
@@ -21,20 +21,11 @@ const runnerPromise = run({
   pollInterval: 1000,
   // you can set the taskList or taskDirectory but not both
   taskList: {
-    hello: async (payload: any, helpers) => {
-      const {name} = payload;
-      await delayMs(2000);
-      helpers.logger.info(`Hello, ${name}`);
-      helpers.logger.info(payload);
-    },
-    sum: async (payload: any, helpers) => {
-      const {firstNum, secondNum} = payload;
-      helpers.logger.info(firstNum + secondNum);
-    },
     showDate: async (_payload, helpers) => {
       helpers.logger.info(new Date().toISOString());
     },
   },
+
   parsedCronItems: parseCronItems([{task: 'showDate', pattern: '* * * * *'}]),
   // or:
   //   taskDirectory: `${__dirname}/tasks`,
