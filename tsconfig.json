@@ -6,6 +6,7 @@
       "dom",
       "esnext"
     ],
+    "types": ["reflect-metadata"],
     "moduleResolution": "node",
     "jsx": "react",
     "target": "es6",
@@ -26,7 +27,9 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": [
     "src",
