@@ -42,14 +42,18 @@ const typeDefs = gql`
   type Price {
     id: Int!
     goodId: Int!
+    good: Good!
     storeId: Int!
+    store: Store!
     amount: Int!
   }
 
   type Order {
     id: Int!
     goodId: Int!
+    good: Good!
     storeId: Int!
+    store: Store!
     quantity: Int!
     total: Int!
   }

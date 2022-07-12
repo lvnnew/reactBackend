@@ -175,6 +175,24 @@ const resolvers = {
     },
   },
 
+  Order: {
+    good(parent: any, _args: any, {container}: Context) {
+      return container.get<IGoodsService>(Service.Goods).byId(parent.goodId);
+    },
+    store(parent: any, _args: any, {container}: Context) {
+      return container.get<IStoresService>(Service.Stores).byId(parent.storeId);
+    },
+  },
+
+  Price: {
+    good(parent: any, _args: any, {container}: Context) {
+      return container.get<IGoodsService>(Service.Goods).byId(parent.goodId);
+    },
+    store(parent: any, _args: any, {container}: Context) {
+      return container.get<IStoresService>(Service.Stores).byId(parent.storeId);
+    },
+  },
+
   Book: {
 
     // The parent resolver (Library.books) returns an object with the
