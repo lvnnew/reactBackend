@@ -1,28 +1,13 @@
 import {Router} from 'express';
 import {log} from '../log';
-
-let films = [
-  {
-    id: 1,
-    title: 'Аватар',
-    raiting: 9,
-  },
-  {
-    id: 2,
-    title: 'Форсаж',
-    raiting: 7,
-  },
-  {
-    id: 3,
-    title: 'Книга Иллая',
-    raiting: 10,
-  },
-];
+import container from '../services/container';
+import {IFilmsService} from '../services/FilmsService';
+import {Service} from '../services/types';
 
 export const filmsRouter = Router();
 
 filmsRouter.get('/', (_req, res) => {
-  res.send(films);
+  res.send(container.get<IFilmsService>(Service.Films).list());
 });
 
 filmsRouter.use('/:filmId', (req, res, next) => {
@@ -37,33 +22,26 @@ filmsRouter.use('/:filmId', (req, res, next) => {
 
 filmsRouter.get('/:filmId', (req, res) => {
   log.info(req.params);
-  res.send(films.find(film => film.id === Number.parseInt(req.params.filmId, 10)));
+  res.send(container.get<IFilmsService>(Service.Films).byId(Number.parseInt(req.params.filmId, 10)));
 });
 
 filmsRouter.post('/', (req, res) => {
   log.info(req.body);
-  const maxId = Math.max(...films.map(film => film.id));
-  films.push({
-    ...req.body,
-    id: maxId + 1,
-  });
-  res.send(films);
+  res.send(container.get<IFilmsService>(Service.Films).create(req.body));
 });
 
 filmsRouter.delete('/:filmId', (req, res) => {
-  log.info(req.params);
-  films = films.filter(film => film.id !== Number.parseInt(req.params.filmId, 10));
-  res.send(films);
+  // log.info(req.params);
+  // log.info(Number.parseInt(req.params.filmId, 10));
+  // log.info(container.get<IFilmsService>(Service.Films).list());
+  container.get<IFilmsService>(Service.Films).del(Number.parseInt(req.params.filmId, 10));
+  // log.info(container.get<IFilmsService>(Service.Films).list());
+  res.send();
 });
 
 filmsRouter.put('/:filmId', (req, res) => {
   log.info(req.params);
-  films = films.map(
-    film => (film.id === Number.parseInt(req.params.filmId, 10) ? {
-      ...req.body,
-      id: film.id,
-    } : film),
-  );
-  res.send(films);
+  log.info(req.body);
+  res.send(container.get<IFilmsService>(Service.Films).update({...req.body, id: Number.parseInt(req.params.filmId, 10)}));
 });
 
