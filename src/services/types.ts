@@ -4,4 +4,5 @@ export enum Service {
   Prices = 'prices',
   Orders = 'orders',
   Films = 'films',
+  Prisma = 'prisma',
 }

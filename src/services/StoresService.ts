@@ -1,5 +1,7 @@
-import {injectable} from 'inversify';
+import {PrismaClient} from '@prisma/client';
+import {inject, injectable} from 'inversify';
 import 'reflect-metadata';
+import {Service} from './types';
 
 export interface Store {
   id: number,
@@ -7,52 +9,40 @@ export interface Store {
 }
 
 export interface IStoresService {
-  list: () => Store[],
-  create: (good: Omit<Store, 'id'>) => Store,
-  update: (good: Store) => Store,
-  byId: (id: number) => Store | undefined,
-  del: (id: number) => void
+  list: () => Promise<Store[]>,
+  create: (store: Omit<Store, 'id'>) => Promise<Store>,
+  update: (store: Store) => Promise<Store>,
+  byId: (id: number) => Promise<Store | null>,
+  del: (id: number) => Promise<void>,
 }
 
 @injectable()
 class StoresService implements IStoresService {
-  stores: Store[] = [
-    {
-      id: 1,
-      title: 'Основной',
-    },
-    {
-      id: 2,
-      title: 'Дополнительный',
-    },
-  ];
+  private prisma: PrismaClient;
 
-  list = () => this.stores;
+  constructor(@inject(Service.Prisma) prisma: PrismaClient) {
+    this.prisma = prisma;
+  }
+
+  list = () => this.prisma.store.findMany();
 
   create = (store: Omit<Store, 'id'>) => {
-    const maxId = Math.max(...this.stores.map(store => store.id));
-    const id = maxId + 1;
-
-    this.stores.push({
-      ...store,
-      id,
-    });
-
-    return this.byId(id) as Store;
+    return this.prisma.store.create({data: store});
   };
 
   update = (store: Store) => {
-    this.stores = this.stores.map(
-      curent => (curent.id === store.id ? store : curent),
-    );
-
-    return this.byId(store.id) as Store;
+    return this.prisma.store.update({
+      where: {
+        id: store.id,
+      },
+      data: store,
+    });
   };
 
-  byId = (id: number) => this.stores.find(store => store.id === id);
+  byId = (id: number) => this.prisma.store.findUnique({where: {id}});
 
-  del = (id: number) => {
-    this.stores = this.stores.filter(store => store.id !== id);
+  del = async (id: number) => {
+    await this.prisma.store.delete({where: {id}});
   };
 }
 

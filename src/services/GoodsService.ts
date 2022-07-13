@@ -1,5 +1,7 @@
-import {injectable} from 'inversify';
+import {PrismaClient} from '@prisma/client';
+import {inject, injectable} from 'inversify';
 import 'reflect-metadata';
+import {Service} from './types';
 
 export interface Good {
   id: number,
@@ -7,52 +9,40 @@ export interface Good {
 }
 
 export interface IGoodsService {
-  list: () => Good[],
-  create: (good: Omit<Good, 'id'>) => Good,
-  update: (good: Good) => Good,
-  byId: (id: number) => Good | undefined,
-  del: (id: number) => void
+  list: () => Promise<Good[]>,
+  create: (good: Omit<Good, 'id'>) => Promise<Good>,
+  update: (good: Good) => Promise<Good>,
+  byId: (id: number) => Promise<Good | null>,
+  del: (id: number) => Promise<void>,
 }
 
 @injectable()
 class GoodsService implements IGoodsService {
-  goods: Good[] = [
-    {
-      id: 1,
-      title: 'Banana',
-    },
-    {
-      id: 2,
-      title: 'Kiwi',
-    },
-  ];
+  private prisma: PrismaClient;
 
-  list = () => this.goods;
+  constructor(@inject(Service.Prisma) prisma: PrismaClient) {
+    this.prisma = prisma;
+  }
+
+  list = () => this.prisma.good.findMany();
 
   create = (good: Omit<Good, 'id'>) => {
-    const maxId = Math.max(...this.goods.map(good => good.id));
-    const id = maxId + 1;
-
-    this.goods.push({
-      ...good,
-      id,
-    });
-
-    return this.byId(id) as Good;
+    return this.prisma.good.create({data: good});
   };
 
   update = (good: Good) => {
-    this.goods = this.goods.map(
-      curent => (curent.id === good.id ? good : curent),
-    );
-
-    return this.byId(good.id) as Good;
+    return this.prisma.good.update({
+      where: {
+        id: good.id,
+      },
+      data: good,
+    });
   };
 
-  byId = (id: number) => this.goods.find(good => good.id === id);
+  byId = (id: number) => this.prisma.good.findUnique({where: {id}});
 
-  del = (id: number) => {
-    this.goods = this.goods.filter(good => good.id !== id);
+  del = async (id: number) => {
+    await this.prisma.good.delete({where: {id}});
   };
 }
 

@@ -1,11 +1,10 @@
-import {PrismaClient} from '@prisma/client';
 import {ApolloServer} from 'apollo-server-express';
 import container from '../services/container';
 import resolvers from './resolvers';
 import typeDefs from './typeDefs';
 import 'reflect-metadata';
 
-const createApolloServer = (prisma: PrismaClient) => {
+const createApolloServer = () => {
   return new ApolloServer({
     typeDefs,
     resolvers,
@@ -14,7 +13,6 @@ const createApolloServer = (prisma: PrismaClient) => {
     introspection: true,
     context: ({req}) => ({
       user: req.headers.user,
-      prisma,
       container,
     }),
   });

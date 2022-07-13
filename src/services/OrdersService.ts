@@ -1,7 +1,8 @@
 import {inject, injectable} from 'inversify';
-import {IPricesService} from './PricesService';
 import {Service} from './types';
 import 'reflect-metadata';
+import {PrismaClient} from '@prisma/client';
+import {IPricesService} from './PricesService';
 
 export interface Order {
   id: number,
@@ -12,72 +13,56 @@ export interface Order {
 }
 
 export interface IOrdersService {
-  list: () => Order[],
-  create: (good: Omit<Order, 'id' | 'total'>) => Order,
-  update: (good: Omit<Order, 'total'>) => Order,
-  byId: (id: number) => Order | undefined,
-  del: (id: number) => void
+  list: () => Promise<Order[]>,
+  create: (order: Omit<Order, 'id' | 'total'>) => Promise<Order>,
+  update: (order: Omit<Order, 'total'>) => Promise<Order>,
+  byId: (id: number) => Promise<Order | null>,
+  del: (id: number) => Promise<void>,
 }
 
 @injectable()
 class OrdersService implements IOrdersService {
-  orders: Order[] = [
-    {
-      id: 1,
-      goodId: 1,
-      storeId: 1,
-      quantity: 5,
-      total: 50,
+  private prices: IPricesService;
 
-    },
-    {
-      id: 2,
-      goodId: 1,
-      storeId: 2,
-      quantity: 10,
-      total: 1000,
-    },
-  ];
+  private prisma: PrismaClient;
 
-  pricesService: IPricesService;
-
-  constructor(@inject(Service.Prices) pricesService: IPricesService) {
-    this.pricesService = pricesService;
+  constructor(
+    @inject(Service.Prices) prices: IPricesService,
+    @inject(Service.Prisma) prisma: PrismaClient,
+  ) {
+    this.prices = prices;
+    this.prisma = prisma;
   }
 
-  list = () => this.orders;
+  list = () => this.prisma.order.findMany();
 
-  create = (order: Omit<Order, 'id' | 'total'>) => {
-    const maxId = Math.max(...this.orders.map(order => order.id));
-    const id = maxId + 1;
+  create = async (order: Omit<Order, 'id' | 'total'>) => {
+    const total = await this.prices.getPrice(order.goodId, order.storeId) * order.quantity;
 
-    const price = this.pricesService.getPrice(order.goodId, order.storeId);
-
-    this.orders.push({
+    return this.prisma.order.create({data: {
+      total,
       ...order,
-      id,
-      total: order.quantity * price,
+    }});
+  };
+
+  update = async (order: Omit<Order, 'total'>) => {
+    const total = await this.prices.getPrice(order.goodId, order.storeId) * order.quantity;
+
+    return this.prisma.order.update({
+      where: {
+        id: order.id,
+      },
+      data: {
+        total,
+        ...order,
+      },
     });
-
-    return this.byId(id) as Order;
   };
 
-  update = (order: Omit<Order, 'total'>) => {
-    const price = this.pricesService.getPrice(order.goodId, order.storeId);
+  byId = (id: number) => this.prisma.order.findUnique({where: {id}});
 
-    this.orders = this.orders.map(
-      curent => (curent.id === order.id ?
-        {...order, total: order.quantity * price} :
-        curent),
-    );
-
-    return this.byId(order.id) as Order;
-  };
-
-  byId = (id: number) => this.orders.find(order => order.id === id);
-
-  del = (id: number) => {
-    this.orders = this.orders.filter(order => order.id !== id);
+  del = async (id: number) => {
+    await this.prisma.order.delete({where: {id}});
   };
 }
 
