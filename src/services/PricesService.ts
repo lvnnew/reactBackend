@@ -1,5 +1,7 @@
-import {injectable} from 'inversify';
+import {PrismaClient} from '@prisma/client';
+import {inject, injectable} from 'inversify';
 import 'reflect-metadata';
+import {Service} from './types';
 
 export interface Price {
   id: number,
@@ -9,72 +11,45 @@ export interface Price {
 }
 
 export interface IPricesService {
-  list: () => Price[],
-  getPrice: (goodId: number, storeId: number) => number,
-  create: (good: Omit<Price, 'id'>) => Price,
-  update: (good: Price) => Price,
-  byId: (id: number) => Price | undefined,
-  del: (id: number) => void
+  list: () => Promise<Price[]>,
+  getPrice: (goodId: number, storeId: number) => Promise<number>,
+  create: (price: Omit<Price, 'id'>) => Promise<Price>,
+  update: (price: Price) => Promise<Price>,
+  byId: (id: number) => Promise<Price | null>,
+  del: (id: number) => Promise<void>,
 }
 
 @injectable()
 class PricesService implements IPricesService {
-  prices: Price[] = [
-    {
-      id: 1,
-      goodId: 1,
-      storeId: 1,
-      amount: 10,
-    },
-    {
-      id: 2,
-      goodId: 1,
-      storeId: 2,
-      amount: 100,
-    },
-    {
-      id: 3,
-      goodId: 2,
-      storeId: 1,
-      amount: 1000,
-    },
-    {
-      id: 4,
-      goodId: 2,
-      storeId: 2,
-      amount: 1,
-    },
-  ];
+  private prisma: PrismaClient;
 
-  list = () => this.prices;
+  constructor(@inject(Service.Prisma) prisma: PrismaClient) {
+    this.prisma = prisma;
+  }
+
+  list = () => this.prisma.price.findMany();
 
   create = (price: Omit<Price, 'id'>) => {
-    const maxId = Math.max(...this.prices.map(price => price.id));
-    const id = maxId + 1;
-
-    this.prices.push({
-      ...price,
-      id,
-    });
-
-    return this.byId(id) as Price;
+    return this.prisma.price.create({data: price});
   };
 
   update = (price: Price) => {
-    this.prices = this.prices.map(
-      curent => (curent.id === price.id ? price : curent),
-    );
-
-    return this.byId(price.id) as Price;
+    return this.prisma.price.update({
+      where: {
+        id: price.id,
+      },
+      data: price,
+    });
   };
 
-  byId = (id: number) => this.prices.find(price => price.id === id);
+  byId = (id: number) => this.prisma.price.findUnique({where: {id}});
 
-  getPrice = (goodId: number, storeId: number) =>
-    this.prices.find(price => price.goodId === goodId && price.storeId === storeId)?.amount ?? 0;
+  del = async (id: number) => {
+    await this.prisma.price.delete({where: {id}});
+  };
 
-  del = (id: number) => {
-    this.prices = this.prices.filter(price => price.id !== id);
+  getPrice = async (goodId: number, storeId: number) => {
+    return (await this.prisma.price.findFirst({where: {goodId, storeId}}))?.amount ?? 0;
   };
 }
 

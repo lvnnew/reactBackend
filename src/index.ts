@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
 import {json} from 'body-parser';
-import {PrismaClient} from '@prisma/client';
 import createApolloServer from './graph/createApolloServer';
 import {filmsRouter} from './rest/films';
 import express from 'express';
+import exitHook from 'exit-hook';
+import container from './services/container';
 
 // cross-env TOKEN=777 yarn ts-node-dev src/index.ts
 
@@ -17,12 +18,8 @@ app.get('/', (_req, res) => {
   res.send({message: 'Hello Vladimir!'});
 });
 
-// The ApolloServer constructor requires two parameters: your schema
-// definition and your set of resolvers.
-const prisma = new PrismaClient();
-
 async function start() {
-  const server = createApolloServer(prisma);
+  const server = createApolloServer();
 
   server
     .start()
@@ -33,10 +30,12 @@ async function start() {
   });
 }
 
+exitHook(() => {
+  console.log('exitHook');
+  container.unbindAll();
+});
+
 start()
   .catch((error) => {
     throw error;
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
   });

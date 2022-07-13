@@ -17,3 +17,36 @@ model User {
   email     String   @unique
   name      String?
 }
+
+model Good {
+  id    Int     @id @default(autoincrement())
+  title String
+  Price Price[]
+  Order Order[]
+}
+
+model Store {
+  id    Int     @id @default(autoincrement())
+  title String
+  Price Price[]
+  Order Order[]
+}
+
+model Price {
+  id      Int   @id @default(autoincrement())
+  goodId  Int
+  good    Good  @relation(fields: [goodId], references: [id])
+  storeId Int
+  store   Store @relation(fields: [storeId], references: [id])
+  amount  Int
+}
+
+model Order {
+  id       Int   @id @default(autoincrement())
+  goodId   Int
+  good     Good  @relation(fields: [goodId], references: [id])
+  storeId  Int
+  store    Store @relation(fields: [storeId], references: [id])
+  quantity Int
+  total    Int
+}
