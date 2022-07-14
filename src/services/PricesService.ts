@@ -1,22 +1,16 @@
 import {PrismaClient} from '@prisma/client';
 import {inject, injectable} from 'inversify';
 import 'reflect-metadata';
-import {Service} from './types';
+import {Entity, IEntityService, Service} from './types';
 
-export interface Price {
-  id: number,
+export interface Price extends Entity {
   goodId: number,
   storeId: number,
   amount: number,
 }
 
-export interface IPricesService {
-  list: () => Promise<Price[]>,
+export interface IPricesService extends IEntityService<Price> {
   getPrice: (goodId: number, storeId: number) => Promise<number>,
-  create: (price: Omit<Price, 'id'>) => Promise<Price>,
-  update: (price: Price) => Promise<Price>,
-  byId: (id: number) => Promise<Price | null>,
-  del: (id: number) => Promise<void>,
 }
 
 @injectable()
