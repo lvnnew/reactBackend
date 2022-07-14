@@ -1,20 +1,13 @@
 import {PrismaClient} from '@prisma/client';
 import {inject, injectable} from 'inversify';
 import 'reflect-metadata';
-import {Service} from './types';
+import {Entity, IEntityService, Service} from './types';
 
-export interface Good {
-  id: number,
+export interface Good extends Entity {
   title: string
 }
 
-export interface IGoodsService {
-  list: () => Promise<Good[]>,
-  create: (good: Omit<Good, 'id'>) => Promise<Good>,
-  update: (good: Good) => Promise<Good>,
-  byId: (id: number) => Promise<Good | null>,
-  del: (id: number) => Promise<void>,
-}
+export interface IGoodsService extends IEntityService<Good> {}
 
 @injectable()
 class GoodsService implements IGoodsService {
