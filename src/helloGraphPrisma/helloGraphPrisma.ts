@@ -10,7 +10,7 @@ import {ApolloServer, gql} from 'apollo-server';
 const typeDefs = gql`
   # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
 
-  scalar Void 
+  scalar Void
 
   type User {
     id: Int!
