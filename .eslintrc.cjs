@@ -3,14 +3,9 @@ module.exports = {
     es2020: true,
     browser: true,
     node: true,
-    jest: true,
-    mocha: true,
   },
   extends: [
     'canonical',
-
-    // 'canonical/mocha',
-    'canonical/jest',
     'plugin:@typescript-eslint/recommended',
     'eslint:recommended',
   ],
@@ -23,10 +18,6 @@ module.exports = {
     'canonical/import-specifier-newline': 'off',
     'canonical/destructuring-property-newline': 'off',
     'unicorn/prefer-object-from-entries': 'off',
-    'mocha/no-skipped-tests': 'off',
-    'jest/consistent-test-it': 'off',
-    'mocha/no-global-tests': 'off',
-    'jest/require-top-level-describe': 'off',
     'unicorn/no-array-for-each': 'off',
     'canonical/id-match': 'off',
     'canonical/filename-match-exported': 'off',
@@ -53,9 +44,6 @@ module.exports = {
       0,
     ],
     '@typescript-eslint/explicit-module-boundary-types': [
-      0,
-    ],
-    'jest/prefer-expect-assertions': [
       0,
     ],
 
@@ -145,19 +133,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': [
       0,
     ],
-    'jest/no-disabled-tests': [
-      0,
-    ],
-    'mocha/no-top-level-hooks': [
-      0,
-    ],
-    'mocha/no-hooks-for-single-case': [
-      0,
-    ],
     'fp/no-delete': [
-      0,
-    ],
-    'jest/no-truthy-falsy': [
       0,
     ],
     'react/no-multi-comp': [
@@ -190,9 +166,6 @@ module.exports = {
     'import/unambiguous': [
       0,
     ],
-    'mocha/no-setup-in-describe': [
-      0,
-    ],
     'no-process-exit': [
       0,
     ],
@@ -200,9 +173,6 @@ module.exports = {
       0,
     ],
     'func-call-spacing': [
-      0,
-    ],
-    'mocha/max-top-level-suites': [
       0,
     ],
     'import/order': [
